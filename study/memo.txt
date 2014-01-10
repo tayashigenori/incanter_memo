@@ -1,0 +1,71 @@
+﻿; import modules
+(use '(incanter core charts io stats datasets))
+
+; read data
+(def data (read-dataset "data.csv" :header true))
+
+; view data
+(view data)
+
+; 各列を変数に格納
+(def month ($ :month data))
+(def A ($ :A data))
+(def B ($ :B data))
+(def C ($ :C data))
+
+; 要約統計量（平均、中央値、分散）を計算
+(mean ($ :A data))
+(median ($ :B data))
+(variance ($ :C data))
+
+; 平均値の比較
+(str "Bの平均値：" (mean B))
+(str "Cの平均値：" (mean C))
+
+; 棒グラフ
+(view (line-chart month C))
+
+; 中央値を比較
+(median B)
+(median C)
+
+; 散布図
+(view (scatter-plot A B))
+(view (scatter-plot B C))
+(view (scatter-plot A C))
+
+; 相関係数
+(correlation A B)
+(correlation B C)
+(correlation A C)
+
+; 線形かどうかの検定
+(correlation-linearity-test A B)
+(correlation-linearity-test B C)
+(correlation-linearity-test A C)
+
+
+: 回帰分析
+(use '(incanter core charts io stats datasets))
+
+;;matrixという行列の形式でファイルを読み込み
+(def reg-matrix (to-matrix (read-dataset "reg.csv" :header true)))
+
+;;selを使ってcols(列)が0番目の列を取得し、それをAと定義します
+(def A (sel reg-matrix :cols 0))
+
+;;(linear-model目的変数 説明変数)で線形回帰をしてくれます。(range 1 6)は1〜5までの数値のリストを出してくれます。つまり、reg-matrixの1〜5列目までを説明変数として利用しますという意味です
+(def lm (linear-model A (sel reg-matrix :cols (range 1 6))))
+
+;;lmと打てばモデルの詳細な中身が得られますが、今回は回帰係数と決定係数だけ見ます
+(str "回帰係数:" (:coefs lm) ", 自由度調整済み決定係数:" (:adj-r-square lm))
+
+;;また、回帰係数が欲しいだけなら、簡易版のsimple-regressionもあります。
+(simple-regression A (sel reg-matrix :cols (range 1 6)))
+
+; t検定
+(def t (read-dataset "t_test.csv" :header true))
+(def PRE ($ :pre t))
+(def POST ($ :post t))
+(t-test PRE :y POST)
+
